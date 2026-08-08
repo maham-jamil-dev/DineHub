@@ -1,0 +1,28 @@
+# Dine Hub - Restaurant Reservation Management System
+# Frontend Requirements
+
+# Core Framework
+react==18.2.0
+react-dom==18.2.0
+
+# Routing
+react-router-dom==6.20.0
+
+# UI Components & Icons
+lucide-react==0.294.0
+
+# Charts & Data Visualization
+recharts==2.10.0
+
+# Styling
+# Tailwind CSS is configured via devDependencies (see package.json)
+# tailwindcss==3.3.6
+# autoprefixer==10.4.16
+# postcss==8.4.32
+
+# Build Tool
+# vite==5.0.8
+# @vitejs/plugin-react==4.2.1
+
+# Note: This is a frontend-only demo project.
+# Future backend requirements: Node.js, Express, MongoDB, JWT, Socket.io
