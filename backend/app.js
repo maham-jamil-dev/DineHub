@@ -13,6 +13,7 @@ import orderRoutes from "./routes/orderRoutes.js";
 import reviewRoutes from "./routes/reviewRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import reservationRoutes from "./routes/reservationRoutes.js";
+import blogRoutes from "./routes/blogRoutes.js";
 const app = express();
 
 app.use(
@@ -40,6 +41,7 @@ app.use("/api/orders", orderRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/reservations", reservationRoutes);
+app.use("/api/blogs", blogRoutes);
 app.get("/", (req, res) => {
   res.json({
     success: true,

@@ -16,6 +16,7 @@ import {
   X,
   ChevronRight,
   Calendar,
+  BookOpen,
 } from "lucide-react";
 
 function Sidebar() {
@@ -24,8 +25,11 @@ function Sidebar() {
   const { role, logout } = useAuth();
 
   const location = useLocation();
-
   const navigate = useNavigate();
+
+  // ============================
+  // Customer Links
+  // ============================
 
   const customerLinks = [
     {
@@ -33,18 +37,21 @@ function Sidebar() {
       icon: LayoutDashboard,
       label: "Dashboard",
     },
-
     {
       to: "/customer/orders",
       icon: ShoppingBag,
       label: "My Orders",
     },
     {
-  to: "/customer/reservations",
-  icon: Calendar,
-  label: "My Reservations",
-},
+      to: "/customer/reservations",
+      icon: Calendar,
+      label: "My Reservations",
+    },
   ];
+
+  // ============================
+  // Owner Links
+  // ============================
 
   const ownerLinks = [
     {
@@ -52,37 +59,31 @@ function Sidebar() {
       icon: LayoutDashboard,
       label: "Dashboard",
     },
-
     {
       to: "/owner/restaurant",
       icon: Building2,
       label: "Restaurant",
     },
-
     {
       to: "/owner/menu",
       icon: UtensilsCrossed,
       label: "Menu",
-       name: "Reservations",
-  path: "/owner/reservations",
     },
-
     {
       to: "/owner/reservations",
       icon: Calendar,
       label: "Reservations",
     },
-
     {
       to: "/owner/orders",
       icon: ShoppingBag,
       label: "Orders",
     },
-{
-  to: "/owner/reviews",
-  icon: FileText,
-  label: "Reviews",
-},
+    {
+      to: "/owner/reviews",
+      icon: FileText,
+      label: "Reviews",
+    },
     {
       to: "/owner/analytics",
       icon: BarChart3,
@@ -90,41 +91,51 @@ function Sidebar() {
     },
   ];
 
+  // ============================
+  // Admin Links
+  // ============================
+
   const adminLinks = [
     {
       to: "/admin/dashboard",
       icon: LayoutDashboard,
       label: "Dashboard",
     },
-
     {
       to: "/admin/users",
       icon: Users,
       label: "Users",
     },
-
     {
       to: "/admin/restaurants",
       icon: ChefHat,
       label: "Restaurants",
     },
-{
-  to: "/admin/reservations",
-  icon: Calendar,
-  label: "Reservations",
-},
+    {
+      to: "/admin/reservations",
+      icon: Calendar,
+      label: "Reservations",
+    },
+    {
+      to: "/admin/blogs",
+      icon: BookOpen,
+      label: "Blogs",
+    },
     {
       to: "/admin/analytics",
       icon: BarChart3,
       label: "Analytics",
     },
-
     {
       to: "/admin/reports",
       icon: FileText,
       label: "Reports",
     },
   ];
+
+  // ============================
+  // Select Links According to Role
+  // ============================
 
   const links =
     role === "admin"
@@ -133,6 +144,10 @@ function Sidebar() {
       ? ownerLinks
       : customerLinks;
 
+  // ============================
+  // Logout
+  // ============================
+
   const handleLogout = () => {
     logout();
     navigate("/");
@@ -140,7 +155,9 @@ function Sidebar() {
 
   return (
     <>
-      {/* Mobile Button */}
+      {/* ============================
+          Mobile Menu Button
+      ============================ */}
 
       <button
         onClick={() => setMobileOpen(!mobileOpen)}
@@ -153,12 +170,20 @@ function Sidebar() {
         )}
       </button>
 
+      {/* ============================
+          Mobile Overlay
+      ============================ */}
+
       {mobileOpen && (
         <div
           className="lg:hidden fixed inset-0 bg-black/50 z-40"
           onClick={() => setMobileOpen(false)}
         ></div>
       )}
+
+      {/* ============================
+          Sidebar
+      ============================ */}
 
       <aside
         className={`fixed top-0 left-0 h-full w-64 bg-white border-r border-gray-100 z-40 flex flex-col transition-transform duration-300 ${
@@ -167,41 +192,43 @@ function Sidebar() {
             : "-translate-x-full lg:translate-x-0"
         }`}
       >
-        {/* Logo */}
+        {/* ============================
+            Logo
+        ============================ */}
 
         <div className="p-6 border-b border-gray-100">
-
           <Link
             to="/"
             className="flex items-center gap-3"
+            onClick={() => setMobileOpen(false)}
           >
             <img
               src="/logo.png"
-              alt="Logo"
+              alt="DineHub Logo"
               className="h-12 w-12 object-contain"
             />
 
             <div>
-             <span className="text-xl font-bold text-primary">
-  Dine
-</span>
+              <span className="text-xl font-bold text-primary">
+                Dine
+              </span>
 
-<span className="text-xl font-bold text-gold">
-  Hub
-</span>
+              <span className="text-xl font-bold text-gold">
+                Hub
+              </span>
             </div>
           </Link>
-
         </div>
 
-        {/* Links */}
+        {/* ============================
+            Navigation Links
+        ============================ */}
 
-        <nav className="flex-1 p-4 space-y-1">
-
+        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
           {links.map((link) => {
-
             const isActive =
-              location.pathname === link.to;
+              location.pathname === link.to ||
+              location.pathname.startsWith(`${link.to}/`);
 
             return (
               <Link
@@ -224,19 +251,19 @@ function Sidebar() {
           })}
         </nav>
 
-        {/* Logout */}
+        {/* ============================
+            Logout
+        ============================ */}
 
-        <div className="p-4 border-t">
-
+        <div className="p-4 border-t border-gray-100">
           <button
             onClick={handleLogout}
             className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-primary font-medium hover:bg-gold/10 transition-colors"
           >
             <LogOut className="h-5 w-5" />
 
-            Logout
+            <span>Logout</span>
           </button>
-
         </div>
       </aside>
     </>

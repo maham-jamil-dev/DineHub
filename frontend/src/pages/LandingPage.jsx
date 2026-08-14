@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import { getRestaurants } from "../api/api";
+import API from "../api/api";
 import { Link, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+
 import {
   Search,
   ArrowRight,
@@ -19,21 +22,24 @@ const heroSlides = [
     title: "Feed Your",
     highlight: "Cravings",
     desc: "Discover top-rated restaurants, reserve tables, and enjoy delicious meals with Dine Hub.",
-    image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1600&auto=format&fit=crop&q=80",
+    image:
+      "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1600&auto=format&fit=crop&q=80",
   },
   {
     id: 2,
     title: "Reserve Tables",
     highlight: "Effortlessly",
     desc: "Skip the waiting line. Book your favorite dining spot in advance with zero hassle.",
-    image: "https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?w=1600&auto=format&fit=crop&q=80",
+    image:
+      "https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?w=1600&auto=format&fit=crop&q=80",
   },
   {
     id: 3,
     title: "Gourmet Meals",
     highlight: "Delivered Fast",
     desc: "Order exquisite dishes directly from top local chefs right to your doorstep.",
-    image: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=1600&auto=format&fit=crop&q=80",
+    image:
+      "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=1600&auto=format&fit=crop&q=80",
   },
 ];
 
@@ -101,54 +107,122 @@ const reviews = [
 function LandingPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [restaurants, setRestaurants] = useState([]);
+  const [blogs, setBlogs] = useState([]);
+  const [blogsLoading, setBlogsLoading] = useState(true);
   const [currentSlide, setCurrentSlide] = useState(0);
+
   const navigate = useNavigate();
+
+  // ============================
+  // Search Restaurants
+  // ============================
 
   const handleSearch = () => {
     navigate(`/restaurants?search=${searchQuery}`);
   };
 
+  // ============================
+  // Fetch Restaurants
+  // ============================
+
   const fetchRestaurants = async () => {
     try {
       const res = await getRestaurants();
+
       setRestaurants(res.data.restaurants || []);
     } catch (error) {
       console.log(error);
     }
   };
 
+  // ============================
+  // Fetch Latest Blogs
+  // ============================
+
+  const fetchLatestBlogs = async () => {
+    try {
+      setBlogsLoading(true);
+
+      const res = await API.get("/blogs");
+
+      const allBlogs = res.data.blogs || [];
+
+      // Latest 3 published blogs
+      setBlogs(allBlogs.slice(0, 3));
+    } catch (error) {
+      console.log("Blog Fetch Error:", error);
+
+      setBlogs([]);
+
+      toast.error(
+        error.response?.data?.message || "Unable to load blogs"
+      );
+    } finally {
+      setBlogsLoading(false);
+    }
+  };
+
+  // ============================
+  // Initial Data
+  // ============================
+
   useEffect(() => {
     fetchRestaurants();
+    fetchLatestBlogs();
   }, []);
+
+  // ============================
+  // Hero Slider
+  // ============================
 
   useEffect(() => {
     const slideTimer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
     }, 5000);
+
     return () => clearInterval(slideTimer);
   }, []);
 
   const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
+    setCurrentSlide(
+      (prev) => (prev + 1) % heroSlides.length
+    );
   };
 
   const prevSlide = () => {
-    setCurrentSlide((prev) => (prev - 1 + heroSlides.length) % heroSlides.length);
+    setCurrentSlide(
+      (prev) =>
+        (prev - 1 + heroSlides.length) %
+        heroSlides.length
+    );
   };
 
+  // ============================
+  // Filter Restaurants
+  // ============================
+
   const filteredRestaurants = restaurants.filter((restaurant) =>
-    restaurant.name.toLowerCase().includes(searchQuery.toLowerCase())
+    restaurant.name
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase())
   );
 
   return (
     <div>
-      {/* Hero Carousel */}
+
+      {/* ============================
+          Hero Carousel
+      ============================ */}
+
       <section className="relative min-h-[620px] flex items-center justify-center overflow-hidden transition-all duration-700">
+
         {heroSlides.map((slide, index) => (
           <div
             key={slide.id}
             className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
-              index === currentSlide ? "opacity-100 z-10" : "opacity-0 z-0 pointer-events-none"
+              index === currentSlide
+                ? "opacity-100 z-10"
+                : "opacity-0 z-0 pointer-events-none"
             }`}
           >
             <img
@@ -156,11 +230,13 @@ function LandingPage() {
               alt={slide.title}
               className="w-full h-full object-cover"
             />
+
             <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/60 to-black/80"></div>
           </div>
         ))}
 
-        {/* Carousel Navigation Buttons */}
+        {/* Previous Button */}
+
         <button
           onClick={prevSlide}
           className="absolute left-4 z-20 p-3 rounded-full bg-white/20 text-white hover:bg-white/40 backdrop-blur-md transition-all cursor-pointer"
@@ -168,6 +244,8 @@ function LandingPage() {
         >
           <ChevronLeft className="h-6 w-6" />
         </button>
+
+        {/* Next Button */}
 
         <button
           onClick={nextSlide}
@@ -178,23 +256,31 @@ function LandingPage() {
         </button>
 
         <div className="relative z-20 max-w-4xl mx-auto px-4 text-center text-white">
+
           <h1 className="text-5xl md:text-6xl font-display font-bold mb-5 leading-tight transition-all">
             {heroSlides[currentSlide].title}{" "}
-            <span className="text-gold">{heroSlides[currentSlide].highlight}</span>
+            <span className="text-gold">
+              {heroSlides[currentSlide].highlight}
+            </span>
           </h1>
 
           <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto font-light">
             {heroSlides[currentSlide].desc}
           </p>
 
+          {/* Search */}
+
           <div className="max-w-xl mx-auto bg-white/10 backdrop-blur-md rounded-2xl p-2 flex items-center gap-2 border border-white/20 shadow-2xl">
+
             <Search className="text-white ml-3 h-5 w-5" />
 
             <input
               type="text"
               placeholder="Search restaurants, cuisines..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) =>
+                setSearchQuery(e.target.value)
+              }
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   handleSearch();
@@ -209,35 +295,51 @@ function LandingPage() {
             >
               Find Food
             </button>
+
           </div>
 
-          {/* Dots Indicator */}
+          {/* Dots */}
+
           <div className="flex justify-center gap-2 mt-8">
+
             {heroSlides.map((_, idx) => (
               <button
                 key={idx}
                 onClick={() => setCurrentSlide(idx)}
                 className={`h-2.5 rounded-full transition-all cursor-pointer ${
-                  idx === currentSlide ? "w-8 bg-gold" : "w-2.5 bg-white/40 hover:bg-white/70"
+                  idx === currentSlide
+                    ? "w-8 bg-gold"
+                    : "w-2.5 bg-white/40 hover:bg-white/70"
                 }`}
                 aria-label={`Go to slide ${idx + 1}`}
               />
             ))}
+
           </div>
+
         </div>
       </section>
 
-      {/* Features */}
+      {/* ============================
+          Features
+      ============================ */}
+
       <section className="py-16 bg-white">
+
         <div className="max-w-7xl mx-auto px-4">
+
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+
             {features.map((feature, index) => (
               <div
                 key={index}
                 className="text-center p-6 rounded-3xl border border-gray-100/80 bg-white hover:bg-gradient-to-b hover:from-white hover:to-amber-50/50 hover:border-gold/30 hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 transform group cursor-pointer"
               >
+
                 <div className="w-16 h-16 rounded-full bg-gold/10 flex items-center justify-center mx-auto mb-4 group-hover:scale-105 group-hover:bg-primary transition-all duration-300 shadow-sm">
+
                   <feature.icon className="text-primary group-hover:text-white h-7 w-7 transition-colors" />
+
                 </div>
 
                 <h3 className="font-bold mb-2 text-dark">
@@ -247,13 +349,18 @@ function LandingPage() {
                 <p className="text-gray-500 text-sm">
                   {feature.desc}
                 </p>
+
               </div>
             ))}
+
           </div>
+
         </div>
       </section>
 
-      {/* Featured Restaurants */}
+      {/* ============================
+          Featured Restaurants
+      ============================ */}
 
       <section className="py-16 bg-cream">
 
@@ -278,6 +385,7 @@ function LandingPage() {
               className="flex items-center gap-2 text-primary font-semibold hover:gap-3 transition-all"
             >
               View All
+
               <ArrowRight className="h-4 w-4" />
             </Link>
 
@@ -287,7 +395,9 @@ function LandingPage() {
 
             {filteredRestaurants.length > 0 ? (
 
-              filteredRestaurants.slice(0, 4).map((restaurant) => (
+              filteredRestaurants
+                .slice(0, 4)
+                .map((restaurant) => (
 
                   <RestaurantCard
                     key={restaurant._id}
@@ -307,9 +417,196 @@ function LandingPage() {
           </div>
 
         </div>
+      </section>
+
+      {/* ============================
+          BLOG SECTION
+      ============================ */}
+
+      <section className="py-16 bg-white">
+
+        <div className="max-w-7xl mx-auto px-4">
+
+          {/* Blog Header */}
+
+          <div className="flex flex-col md:flex-row justify-between md:items-end gap-4 mb-8">
+
+            <div>
+
+              <p className="text-primary font-semibold text-sm uppercase tracking-wide mb-2">
+                DineHub Blog
+              </p>
+
+              <h2 className="text-3xl font-display font-bold text-dark mb-2">
+                Latest Food Stories
+              </h2>
+
+              <p className="text-gray-500">
+                Discover food guides, recipes, dining tips and restaurant reviews.
+              </p>
+
+            </div>
+
+            <Link
+              to="/blog"
+              className="flex items-center gap-2 text-primary font-semibold hover:gap-3 transition-all"
+            >
+              View All Blogs
+
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+
+          </div>
+
+          {/* Blog Loading */}
+
+          {blogsLoading ? (
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+              {[1, 2, 3].map((item) => (
+
+                <div
+                  key={item}
+                  className="bg-gray-50 rounded-2xl overflow-hidden animate-pulse"
+                >
+
+                  <div className="h-56 bg-gray-200"></div>
+
+                  <div className="p-6">
+
+                    <div className="h-4 bg-gray-200 rounded w-24 mb-4"></div>
+
+                    <div className="h-6 bg-gray-200 rounded w-3/4 mb-3"></div>
+
+                    <div className="h-4 bg-gray-200 rounded w-full mb-2"></div>
+
+                    <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+
+                  </div>
+
+                </div>
+
+              ))}
+
+            </div>
+
+          ) : blogs.length > 0 ? (
+
+            /* Blog Cards */
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+              {blogs.map((blog) => (
+
+                <article
+                  key={blog._id}
+                  className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 group"
+                >
+
+                  {/* Blog Image */}
+
+                  <Link to={`/blog/${blog._id}`}>
+
+                    <div className="h-56 overflow-hidden">
+
+                      <img
+                        src={blog.image}
+                        alt={blog.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+
+                    </div>
+
+                  </Link>
+
+                  {/* Blog Content */}
+
+                  <div className="p-6">
+
+                    {/* Category */}
+
+                    <span className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold mb-3">
+                      {blog.category}
+                    </span>
+
+                    {/* Title */}
+
+                    <Link to={`/blog/${blog._id}`}>
+
+                      <h3 className="text-xl font-bold text-dark mb-3 line-clamp-2 group-hover:text-primary transition-colors">
+                        {blog.title}
+                      </h3>
+
+                    </Link>
+
+                    {/* Excerpt */}
+
+                    <p className="text-gray-500 text-sm leading-relaxed line-clamp-3 mb-5">
+                      {blog.excerpt}
+                    </p>
+
+                    {/* Blog Footer */}
+
+                    <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+
+                      <div>
+
+                        <p className="text-sm font-semibold text-dark">
+                          {blog.author}
+                        </p>
+
+                        <p className="text-xs text-gray-400 mt-1">
+                          {blog.readTime || "5 min"}
+                        </p>
+
+                      </div>
+
+                      <Link
+                        to={`/blog/${blog._id}`}
+                        className="text-primary font-semibold text-sm flex items-center gap-1 hover:gap-2 transition-all"
+                      >
+                        Read More
+
+                        <ArrowRight className="h-4 w-4" />
+
+                      </Link>
+
+                    </div>
+
+                  </div>
+
+                </article>
+
+              ))}
+
+            </div>
+
+          ) : (
+
+            /* No Blogs */
+
+            <div className="text-center py-12 bg-gray-50 rounded-2xl">
+
+              <h3 className="text-xl font-semibold text-dark mb-2">
+                No Blog Posts Available
+              </h3>
+
+              <p className="text-gray-500">
+                New food stories will appear here soon.
+              </p>
+
+            </div>
+
+          )}
+
+        </div>
 
       </section>
-            {/* Customer Reviews */}
+
+      {/* ============================
+          Customer Reviews
+      ============================ */}
 
       <section className="py-16 bg-white">
 
@@ -332,10 +629,10 @@ function LandingPage() {
 
             {reviews.map((review) => (
 
-             <div
-  key={review.id}
-  className="bg-gray-50 border border-gray-100 rounded-2xl p-6 hover:shadow-lg transition duration-300 flex flex-col h-full"
->
+              <div
+                key={review.id}
+                className="bg-gray-50 border border-gray-100 rounded-2xl p-6 hover:shadow-lg transition duration-300 flex flex-col h-full"
+              >
 
                 <div className="flex items-center mb-4">
 
@@ -353,8 +650,8 @@ function LandingPage() {
                 </div>
 
                 <p className="text-gray-600 leading-7 italic flex-1">
-  "{review.review}"
-</p>
+                  "{review.review}"
+                </p>
 
                 <div className="border-t pt-4 mt-6">
 
@@ -375,12 +672,14 @@ function LandingPage() {
           </div>
 
         </div>
-
       </section>
-            {/* CTA */}
+
+      {/* ============================
+          CTA
+      ============================ */}
 
       <section className="py-20 bg-gradient-to-r from-[#A81818] via-primary to-[#7A0000] text-white relative overflow-hidden shadow-2xl">
-        {/* Subtle depth overlay */}
+
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-white/10 via-transparent to-black/20 pointer-events-none" />
 
         <div className="max-w-3xl mx-auto text-center px-4 relative z-10">

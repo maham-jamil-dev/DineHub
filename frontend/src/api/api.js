@@ -111,6 +111,7 @@ export const approveRestaurant = (id) =>
 
 export const rejectRestaurant = (id) =>
   API.put(`/admin/restaurant/reject/${id}`);
+
 // ===========================
 // CART
 // ===========================
@@ -140,7 +141,6 @@ export const placeOrder = (data) =>
 export const getMyOrders = () =>
   API.get("/orders/my");
 
-
 // ===========================
 // RESERVATIONS
 // ===========================
@@ -159,7 +159,6 @@ export const getRestaurantReservations = () =>
 export const updateReservationStatus = (id, data) =>
   API.put(`/reservations/status/${id}`, data);
 
-
 // ===========================
 // ADMIN RESERVATIONS
 // ===========================
@@ -170,13 +169,18 @@ export const getAllReservations = () =>
 export const deleteReservation = (id) =>
   API.delete(`/admin/reservation/${id}`);
 
-export const createReview = (data) => {
-  return API.post("/reviews/add", data, {
-    headers: {
-      Authorization: `Bearer ${localStorage.getItem("token")}`,
-    },
-  });
-};
+// ===========================
+// REVIEWS
+// ===========================
+
+export const createReview = (data) =>
+  API.post("/reviews/add", data);
+
 export const getOwnerReviews = () =>
   API.get("/reviews/my");
+
+// ===========================
+// EXPORT API
+// ===========================
+
 export default API;
